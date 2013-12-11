@@ -46,9 +46,10 @@
   ];
 
   var options = {
-    enableCellNavigation: true,
+    enableCellNavigation: false,
     enableColumnReorder: false,
-	forceSyncScrolling : false
+	forceSyncScrolling : false,
+	stepfyScroll : true,
   };
 
   $(function () {
@@ -66,7 +67,7 @@
     }
 	
 	// Create the DataView.
-	var dataView = new Slick.Data.DataView(data);
+	var dataView = new Slick.Data.DataView();
 	
     grid = new Slick.Grid("#myGrid", dataView, columns, options);
 	
@@ -80,8 +81,8 @@
 	  grid.invalidateRows(args.rows);
 	  grid.render();
 	});
-	dataView.setItems(data);
 	
+	dataView.setItems(data);
 	
 	//Listen for scroll event
 	grid.onScroll.subscribe(function (e, args) {
