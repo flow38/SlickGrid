@@ -86,7 +86,8 @@ if (typeof Slick === "undefined") {
             multiColumnSort: false,
             defaultFormatter: defaultFormatter,
             forceSyncScrolling: false,
-            addNewRowCssClass: "new-row"
+            addNewRowCssClass: "new-row",
+            stepfyScroll: false
         };
 
         var columnDefaults = {
@@ -1983,6 +1984,15 @@ if (typeof Slick === "undefined") {
         }
 
         function handleScroll() {
+            //Stepfy scrolling to match row height
+            if(options.stepfyScroll){
+                 if($viewport[0].scrollTop - prevScrollTop > 0){
+                    $viewport[0].scrollTop = Math.ceil($viewport[0].scrollTop/25) * 25;
+                 }else{
+                     $viewport[0].scrollTop = Math.floor($viewport[0].scrollTop/25) * 25;
+                 }
+            }
+            
             scrollTop = $viewport[0].scrollTop;
             scrollLeft = $viewport[0].scrollLeft;
             var vScrollDist = Math.abs(scrollTop - prevScrollTop);
