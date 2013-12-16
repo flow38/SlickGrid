@@ -20,3 +20,9 @@ Some highlights:
 * Advanced detached & multi-field editors with undo/redo support.
 * “GlobalEditorLock” to manage concurrent edits in cases where multiple Views on a page can edit the same data.
 * Support for [millions of rows](http://stackoverflow.com/a/2569488/1269037)
+
+
+This fork introduce some new features:
+* Stepfy scrolling (see options.stepfy): when scrolling, grid never display a part of a row.
+* pinedRows (see options.stepfy): Allow to force n-first rows display on grid top, even if user scroll across
+data. Aka Excel pined row feature..
