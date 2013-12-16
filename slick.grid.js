@@ -87,7 +87,10 @@ if (typeof Slick === "undefined") {
             defaultFormatter: defaultFormatter,
             forceSyncScrolling: false,
             addNewRowCssClass: "new-row",
-            stepfyScroll: false
+            //stepfyScroll enable to force scroll position to be a rowHeight multiple (aka perfect scrolling)
+            stepfyScroll: false,
+            //TestMode enable us to expose private function for testing purpose
+            testMode: false
         };
 
         var columnDefaults = {
@@ -3434,6 +3437,17 @@ if (typeof Slick === "undefined") {
             "getEditorLock": getEditorLock,
             "getEditController": getEditController
         });
+        
+        /**
+         * For testing purpose, we want to expose some private method or properties
+         */
+        if(options.testMode){
+            $.extend(this, {
+                "rowsCache" : rowsCache,
+                "scrollTo" : scrollTo,
+                "handleScroll" : handleScroll
+            });
+        }
 
         init();
     }
