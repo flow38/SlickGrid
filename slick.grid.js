@@ -89,8 +89,12 @@ if (typeof Slick === "undefined") {
             addNewRowCssClass: "new-row",
             //stepfyScroll enable to force scroll position to be a rowHeight multiple (aka perfect scrolling)
             stepfyScroll: false,
+            //pinedRows set max row index under which rows are always display on grid top, even if
+            //use scroll down the grid
+            pinedRows:0,
             //TestMode enable us to expose private function for testing purpose
             testMode: false
+                    
         };
 
         var columnDefaults = {
@@ -590,6 +594,10 @@ if (typeof Slick === "undefined") {
                     "column": m
                 });
 
+                /**
+                 * See showHeaderRow option demo on
+                 * https://github.com/mleibman/SlickGrid/blob/gh-pages/examples/example-header-row.html
+                 */
                 if (options.showHeaderRow) {
                     var headerRowCell = $("<div class='ui-state-default slick-headerrow-column l" + i + " r" + i + "'></div>")
                             .data("column", m)
@@ -1489,9 +1497,12 @@ if (typeof Slick === "undefined") {
 
 
         function cleanupRows(rangeToKeep) {
+            var pinedRowRange = getPinedRowRange();
             for (var i in rowsCache) {
                 if (((i = parseInt(i, 10)) !== activeRow) && (i < rangeToKeep.top || i > rangeToKeep.bottom)) {
-                    removeRowFromCache(i);
+                    //never remove from cache pined row(to remove a pined row from cache and DOM, use invalidate
+                    if(!isAPinedRow(i))
+                        removeRowFromCache(i);
                 }
             }
         }
@@ -1521,7 +1532,7 @@ if (typeof Slick === "undefined") {
                 cacheEntry.rowNode.style.display = 'none';
                 zombieRowNodeFromLastMouseWheelEvent = rowNodeFromLastMouseWheelEvent;
             } else {
-                $canvas[0].removeChild(cacheEntry.rowNode);
+                cacheEntry.rowNode.parentNode.removeChild(cacheEntry.rowNode);
             }
 
             delete rowsCache[row];
@@ -1745,6 +1756,35 @@ if (typeof Slick === "undefined") {
 
             return range;
         }
+        
+        /**
+         * Get range in which row are pined on grid top 
+         * 
+         * Useful to implemente pinedRows option 
+         * You don't need to test options.pinedRows before calling this method
+         * UnitTested
+         * 
+         * @returns Object  A range object where top property is the first row that is pined up
+         *                  and bottom is the last one.
+         *                  Example:   {top:5, bottom:8}
+         */
+        function getPinedRowRange() {
+            var range = {top:-1, bottom: -1};
+            if(options.pinedRows){
+                var range = {
+                    top: 0,
+                    bottom: options.pinedRows -1
+                };
+            }
+            
+            return range;
+        }
+        
+        function isAPinedRow(rowIndex) {
+            var pinedRange = getPinedRowRange();
+            
+            return rowIndex >= pinedRange.top && rowIndex <= pinedRange.bottom;
+        }
 
         function ensureCellNodesInRowsCache(row) {
             var cacheEntry = rowsCache[row];
@@ -1895,18 +1935,7 @@ if (typeof Slick === "undefined") {
 
                 // Create an entry right away so that appendRowHtml() can
                 // start populatating it.
-                rowsCache[i] = {
-                    "rowNode": null,
-                    // ColSpans of rendered cells (by column idx).
-                    // Can also be used for checking whether a cell has been rendered.
-                    "cellColSpans": [],
-                    // Cell nodes (by column idx).  Lazy-populated by ensureCellNodesInRowsCache().
-                    "cellNodesByColumnIdx": [],
-                    // Column indices of cell nodes that have been rendered, but not yet indexed in
-                    // cellNodesByColumnIdx.  These are in the same order as cell nodes added at the
-                    // end of the row.
-                    "cellRenderQueue": []
-                };
+                rowsCache[i] = buildCacheObject();
 
                 appendRowHtml(stringArray, i, range, dataLength);
                 if (activeCellNode && activeRow === i) {
@@ -1922,13 +1951,45 @@ if (typeof Slick === "undefined") {
             var x = document.createElement("div");
             x.innerHTML = stringArray.join("");
 
+            var pinedRowsRange = getPinedRowRange();
+            var viewPortTopPostion = $('.slick-viewport').position().top;
             for (var i = 0, ii = rows.length; i < ii; i++) {
-                rowsCache[rows[i]].rowNode = parentNode.appendChild(x.firstChild);
+                if(rows[i] > pinedRowsRange.bottom)
+                    rowsCache[rows[i]].rowNode = parentNode.appendChild(x.firstChild);
+                else{
+                    //Pined rows
+                    rowsCache[rows[i]].rowNode = $container[0].appendChild(x.firstChild);
+                    var rowTop = $(rowsCache[rows[i]].rowNode).position().top;
+                    $(rowsCache[rows[i]].rowNode).css('top', rowTop + viewPortTopPostion );
+                    //Align row width on canvas width as pined rows are not appent to canvas
+                    //but directly on grid container
+                    $(rowsCache[rows[i]].rowNode).width(getCanvasWidth());
+                    $(rowsCache[rows[i]].rowNode).css('zIndex', 100);
+                }
             }
 
             if (needToReselectCell) {
                 activeCellNode = getCellNode(activeRow, activeCell);
             }
+        }
+        
+        function buildCacheObject(){
+            var cacheObject =  {
+                        "addedToDom":false,             //Does cache render is already added on DOM
+                        "renderIsOverride":false,       //Does cache render is an override one.
+                        "rowNode": null,
+                        // ColSpans of rendered cells (by column idx).
+                        // Can also be used for checking whether a cell has been rendered.
+                        "cellColSpans": [],
+                        // Cell nodes (by column idx).  Lazy-populated by ensureCellNodesInRowsCache().
+                        "cellNodesByColumnIdx": [],
+                        // Column indices of cell nodes that have been rendered, but not yet indexed in
+                        // cellNodesByColumnIdx.  These are in the same order as cell nodes added at the
+                        // end of the row.
+                        "cellRenderQueue": []
+                    };
+                   
+            return cacheObject;
         }
 
         function startPostProcessing() {
@@ -1959,7 +2020,7 @@ if (typeof Slick === "undefined") {
             var visible = getVisibleRange();
             var rendered = getRenderedRange();
 
-            // remove rows no longer in the viewport
+            // remove rows no longer in the viewport, handle pined row exception (never cleanups)
             cleanupRows(rendered);
 
             // add new rows & missing cells in existing rows
@@ -1967,7 +2028,7 @@ if (typeof Slick === "undefined") {
                 cleanUpAndRenderCells(rendered);
             }
 
-            // render missing rows
+            // render missing rows 
             renderRows(rendered);
 
             postProcessFromRow = visible.top;
@@ -1978,6 +2039,8 @@ if (typeof Slick === "undefined") {
             lastRenderedScrollLeft = scrollLeft;
             h_render = null;
         }
+        
+        
 
         function handleHeaderRowScroll() {
             var scrollLeft = $headerRowScroller[0].scrollLeft;
