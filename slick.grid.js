@@ -1959,12 +1959,13 @@ if (typeof Slick === "undefined") {
                 else{
                     //Pined rows
                     rowsCache[rows[i]].rowNode = $container[0].appendChild(x.firstChild);
-                    var rowTop = $(rowsCache[rows[i]].rowNode).position().top;
-                    $(rowsCache[rows[i]].rowNode).css('top', rowTop + viewPortTopPostion );
+                    $rowNode = $(rowsCache[rows[i]].rowNode);
+                    var rowTop = $rowNode.position().top;
+                    $rowNode.css('top', rowTop + viewPortTopPostion );
                     //Align row width on canvas width as pined rows are not appent to canvas
                     //but directly on grid container
-                    $(rowsCache[rows[i]].rowNode).width(getCanvasWidth());
-                    $(rowsCache[rows[i]].rowNode).css('zIndex', 100);
+                    $rowNode.width(getCanvasWidth());
+                    $rowNode.css('zIndex', 100);
                 }
             }
 
