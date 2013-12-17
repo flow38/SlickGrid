@@ -1271,6 +1271,14 @@ if (typeof Slick === "undefined") {
             if (options.autoHeight) {
                 options.leaveSpaceForNewRows = false;
             }
+            
+            if(options.pinedRows){
+                invalidateRows(getPinedRows());
+                renderRows(getPinedRowRange());
+            }
+            if(options.pinedRows === 0){
+                invalidateAllRows();
+            }
         }
 
         function setData(newData, scrollToTop) {
@@ -1778,6 +1786,20 @@ if (typeof Slick === "undefined") {
             }
             
             return range;
+        }
+        
+        /**
+         * Get index pined rows array
+         * @returns array
+         */
+        function getPinedRows(){
+            var range = getPinedRowRange();
+            var rows = [];
+            for(var i = range.top; i <= range.bottom; i++ ){
+                rows.push(i);
+            }
+            
+            return rows;
         }
         
         function isAPinedRow(rowIndex) {
@@ -3510,7 +3532,7 @@ if (typeof Slick === "undefined") {
                 "rowsCache" : rowsCache,
                 "scrollTo" : scrollTo,
                 "handleScroll" : handleScroll,
-                "$container":$container
+                "getContainerNode":getContainerNode
             });
         }
 

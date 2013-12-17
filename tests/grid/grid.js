@@ -109,5 +109,48 @@
         $('.slick-viewport').scrollTop(234);
         grid.handleScroll();
     });
+    
+     /**
+     * Option pinedRows
+     */
+    var onScroll = null;
+    module("Functionnal Test - Option pinedRows ",  {
+        setup: function() {
+           
+        },
+        teardown: function(){
+            grid.onScroll.unsubscribe(onScroll);
+            $('.slick-viewport').scrollTop(0);
+            grid.handleScroll();
+            grid.setOptions({pinedRows: 0});
+        }
+    });
+    
+    test("pinedRows Off", function(GridUtils) {
+        
+        expect(1);
+        onScroll = function(e, args){
+            var pindedRowCount = $(grid.getContainerNode()).children('div.slick-row').length;
+            equal(pindedRowCount, 0);
+        }
+        //Simulate scrolling
+        grid.onScroll.subscribe(onScroll);
+        $('.slick-viewport').scrollTop(234);
+        grid.handleScroll();
+    });
+    
+    test("pinedRows On", function(GridUtils) {
+        grid.setOptions({pinedRows: 7});
+        expect(1);
+        onScroll = function(e, args){
+            var pindedRowCount = $(grid.getContainerNode()).children('div.slick-row').length;
+            equal(pindedRowCount, 7);
+        }
+        //Simulate scrolling
+        grid.onScroll.subscribe(onScroll);
+        $('.slick-viewport').scrollTop(234);
+        grid.handleScroll();
+    });
+    
   
 })(jQuery);
