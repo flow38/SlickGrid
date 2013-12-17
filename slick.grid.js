@@ -3504,7 +3504,7 @@ if (typeof Slick === "undefined") {
         /**
          * For testing purpose, we want to expose some private method or properties
          */
-        if(options.testMode){
+        if(options && options.testMode){
             $.extend(this, {
                 "rowsCache" : rowsCache,
                 "scrollTo" : scrollTo,
