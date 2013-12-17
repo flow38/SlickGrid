@@ -1274,7 +1274,8 @@ if (typeof Slick === "undefined") {
             
             if(options.pinedRows){
                 invalidateRows(getPinedRows());
-                renderRows(getPinedRowRange());
+                if(initialized)
+                    renderRows(getPinedRowRange());
             }
             if(options.pinedRows === 0){
                 invalidateAllRows();

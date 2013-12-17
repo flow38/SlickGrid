@@ -69,7 +69,7 @@
      * Option stepfyScroll
      */
     var onScroll = null;
-    module("Functionnal Test - Option stepfyScroll ",  {
+    module("Option stepfyScroll ",  {
         setup: function() {
            
         },
@@ -81,7 +81,7 @@
         }
     });
     
-    test("stepfyScroll Off", function(GridUtils) {
+    test("Off", function() {
         
         expect(1);
         onScroll = function(e, args){
@@ -93,7 +93,7 @@
         grid.handleScroll();
     });
     
-    test("stepfyScroll On", function() {
+    test("On", function() {
         expect(1);
         
         //Enable stepfy option
@@ -114,7 +114,7 @@
      * Option pinedRows
      */
     var onScroll = null;
-    module("Functionnal Test - Option pinedRows ",  {
+    module("Option pinedRows ",  {
         setup: function() {
            
         },
@@ -126,7 +126,21 @@
         }
     });
     
-    test("pinedRows Off", function(GridUtils) {
+     test("Init", function() {
+        grid.destroy();
+        grid = new Slick.Grid("#container", data, cols, {testMode:true, pinedRows: 7});
+        expect(1);
+        onScroll = function(e, args){
+            var pindedRowCount = $(grid.getContainerNode()).children('div.slick-row').length;
+            equal(pindedRowCount, 7);
+        }
+        //Simulate scrolling
+        grid.onScroll.subscribe(onScroll);
+        $('.slick-viewport').scrollTop(234);
+        grid.handleScroll();
+    });
+    
+    test("Off", function() {
         
         expect(1);
         onScroll = function(e, args){
@@ -139,7 +153,7 @@
         grid.handleScroll();
     });
     
-    test("pinedRows On", function(GridUtils) {
+    test("setOptions({pinedRows: 7}", function() {
         grid.setOptions({pinedRows: 7});
         expect(1);
         onScroll = function(e, args){
@@ -152,5 +166,17 @@
         grid.handleScroll();
     });
     
-  
+    test("versus Data update", function() {
+        grid.setOptions({pinedRows: 7});
+        //update data 
+        var d = grid.getData();
+        d[0].col_0 = grid.getData()[0].col_1 = 'I\'m uptodate';
+        grid.setData(d);
+        grid.render();
+        
+         //Check data has been correctly populated
+         var child = $(grid.getContainerNode()).children('div.slick-row:first').children('div.l1');
+         equal(child.html(), 'I\'m uptodate');
+    });
+    
 })(jQuery);
