@@ -1959,7 +1959,7 @@ if (typeof Slick === "undefined") {
                 else{
                     //Pined rows
                     rowsCache[rows[i]].rowNode = $container[0].appendChild(x.firstChild);
-                    $rowNode = $(rowsCache[rows[i]].rowNode);
+                    var $rowNode = $(rowsCache[rows[i]].rowNode);
                     var rowTop = $rowNode.position().top;
                     $rowNode.css('top', rowTop + viewPortTopPostion );
                     //Align row width on canvas width as pined rows are not appent to canvas
@@ -3509,7 +3509,8 @@ if (typeof Slick === "undefined") {
             $.extend(this, {
                 "rowsCache" : rowsCache,
                 "scrollTo" : scrollTo,
-                "handleScroll" : handleScroll
+                "handleScroll" : handleScroll,
+                "$container":$container
             });
         }
 
